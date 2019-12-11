@@ -35,7 +35,7 @@ class InvertedIndexService {
     } else {
       logger.info(s"Found indexes $indexes")
       val textIds: mutable.HashSet[String] = new mutable.HashSet[String]()
-      indexes.map(item => textIds.addAll(item.getTextIds))
+      indexes.map(item => textIds ++= item.getTextIds)
       textIds.map(item => Text(readFile(item), item)).filter(_.text != null).toList
     }
   }
@@ -47,7 +47,7 @@ class InvertedIndexService {
     readIndexHashMap
 
     try {
-      val out = new PrintWriter(fileName)
+      val out = new PrintWriter(".//texts//" + fileName)
       out.println(text.text)
       out.close()
     } catch {
@@ -66,7 +66,7 @@ class InvertedIndexService {
       }
       val textIds = index.getTextIds
       if (!textIds.contains(text.getId)) {
-        textIds.addOne(text.getId)
+        textIds += text.getId
       }
       indexHashMap.put(index.getWord, index)
       saveIndexHashMap
@@ -77,7 +77,7 @@ class InvertedIndexService {
 
   private def readFile(path: String): String = {
     try {
-      new String(Files.readAllBytes(Paths.get(path)))
+      new String(Files.readAllBytes(Paths.get(".//texts//" + path)))
     } catch {
       case e: NoSuchFileException => {
         logger.error(s"Path $path not found", e.printStackTrace())
@@ -111,8 +111,8 @@ class InvertedIndexService {
       for (item <- input) {
         val t = item.split("=")
         val listbuf: ListBuffer[String] = ListBuffer[String]()
-        t(1).split(",").toList.foreach(i => listbuf.addOne(i))
-        indexHashMap.addOne(t(0) -> Index(t(0), listbuf))
+        t(1).split(",").toList.foreach(i => listbuf += i)
+        indexHashMap += t(0) -> Index(t(0), listbuf)
       }
       source.close()
     } catch {
